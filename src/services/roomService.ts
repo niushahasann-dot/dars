@@ -1,4 +1,5 @@
 import { RoomData, ChatMessage, RoomMember } from '../types';
+import { API_BASE_URL } from './apiConfig';
 
 const LOCAL_STORAGE_KEY = 'studyroom_rooms_db';
 
@@ -24,7 +25,7 @@ export class RoomService {
 
   public async getRooms(): Promise<RoomData[]> {
     try {
-      const res = await fetch('/api/rooms');
+      const res = await fetch(`${API_BASE_URL}/api/rooms`);
       if (res.ok) {
         const rooms: RoomData[] = await res.json();
         rooms.forEach((r) => this.saveLocalRoom(r));
@@ -44,7 +45,7 @@ export class RoomService {
     const cleanId = roomId.trim().toUpperCase();
 
     try {
-      const res = await fetch(`/api/rooms/${cleanId}`);
+      const res = await fetch(`${API_BASE_URL}/api/rooms/${cleanId}`);
       if (res.ok) {
         const room: RoomData = await res.json();
         this.saveLocalRoom(room);
@@ -66,7 +67,7 @@ export class RoomService {
     ownerName: string,
     ownerId: string
   ): Promise<RoomData> {
-    const res = await fetch('/api/rooms', {
+    const res = await fetch(`${API_BASE_URL}/api/rooms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ export class RoomService {
   public async getRoomMembers(roomId: string): Promise<RoomMember[]> {
     try {
       const cleanId = roomId.trim().toUpperCase();
-      const res = await fetch(`/api/rooms/${cleanId}/members`);
+      const res = await fetch(`${API_BASE_URL}/api/rooms/${cleanId}/members`);
       if (!res.ok) return [];
       return await res.json();
     } catch {
@@ -103,7 +104,7 @@ export class RoomService {
   public async getRoomMessages(roomId: string): Promise<ChatMessage[]> {
     try {
       const cleanId = roomId.trim().toUpperCase();
-      const res = await fetch(`/api/rooms/${cleanId}/messages`);
+      const res = await fetch(`${API_BASE_URL}/api/rooms/${cleanId}/messages`);
       if (!res.ok) return [];
       return await res.json();
     } catch {

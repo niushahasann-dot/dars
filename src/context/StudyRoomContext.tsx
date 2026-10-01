@@ -16,6 +16,7 @@ import {
 import { useRouter, cleanRoomId } from '../hooks/useRouter';
 import { chatService } from '../services/chatService';
 import { roomService } from '../services/roomService';
+import { API_BASE_URL } from '../services/apiConfig';
 import type { LiveKitDebugInfo } from '../components/room/LiveKitVoiceManager';
 
 export interface UploadProgressState {
@@ -1128,7 +1129,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const deletePamphlet = async (fileId: string) => {
     if (!activeRoom) return;
     try {
-      const res = await fetch(`/api/rooms/${activeRoom.id}/pamphlets/${fileId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rooms/${activeRoom.id}/pamphlets/${fileId}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -1211,7 +1212,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         // 2. Request short-lived LiveKit SFU Token or Preview fallback from backend
         console.log(`[Voice] Fetching room token for studyroom_${activeRoom.id}...`);
-        const tokenRes = await fetch('/api/voice/token', {
+        const tokenRes = await fetch(`${API_BASE_URL}/api/voice/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
