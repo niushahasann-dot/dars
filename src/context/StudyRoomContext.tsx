@@ -816,6 +816,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setIsLoadingRoom(true);
     setRoomError(null);
+    console.info(`[CONTEXT] Starting createRoom: Name="${roomName}", Category="${category}", Creator="${creatorName || currentUser.name}"`);
 
     try {
       const newRoom = await roomService.createRoom(
@@ -856,6 +857,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         avatarBg: updatedUser.avatarBg,
       });
     } catch (err: unknown) {
+      console.error('[CONTEXT] Error creating room:', err);
       setIsLoadingRoom(false);
       const msg = err instanceof Error ? err.message : 'خطا در ساخت اتاق';
       setRoomError(msg);
@@ -873,6 +875,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setRoomError(null);
     setIsLoadingRoom(true);
+    console.info(`[CONTEXT] Starting joinRoom: RoomID="${roomIdInput}", UserInput="${userNameInput || currentUser.name}"`);
 
     try {
       const roomData = await roomService.getRoom(cleanId);
@@ -927,6 +930,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       showToast(`ورود به کلاس «${roomData.name}» انجام شد.`);
     } catch (err: unknown) {
+      console.error('[CONTEXT] Error joining room:', err);
       setIsLoadingRoom(false);
       const msg = err instanceof Error ? err.message : 'خطا در ورود به کلاس';
       setRoomError(msg);
