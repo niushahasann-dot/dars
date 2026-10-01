@@ -86,8 +86,52 @@ app.use((req, res, next) => {
   next();
 });
 
+// Unified In-Memory Logging System for Diagnosing Worker/CORS Issues
+const serverLogs: Array<{ time: string; level: string; msg: string }> = [];
+
+export function logToBuffer(level: 'INFO' | 'WARN' | 'ERROR', msg: string, details?: any) {
+  const time = new Date().toISOString();
+  let fullMsg = msg;
+  if (details) {
+    fullMsg += ' | ' + (details instanceof Error ? details.stack || details.message : typeof details === 'object' ? JSON.stringify(details) : String(details));
+  }
+  
+  if (level === 'ERROR') {
+    console.error(`[${level}] ${msg}`, details || '');
+  } else if (level === 'WARN') {
+    console.warn(`[${level}] ${msg}`, details || '');
+  } else {
+    console.log(`[${level}] ${msg}`, details || '');
+  }
+  
+  serverLogs.push({ time, level, msg: fullMsg });
+  if (serverLogs.length > 500) {
+    serverLogs.shift();
+  }
+}
+
 // JSON body parser with 25MB limit for pamphlet uploads
 app.use(express.json({ limit: '25mb' }));
+
+app.get('/api/logs', (req, res) => {
+  if (req.query.format === 'text') {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    const text = serverLogs.map(l => `[${l.time}] [${l.level}] ${l.msg}`).join('\n');
+    return res.send(text || 'هیچ لاگی ثبت نشده است.');
+  }
+  res.json({
+    total: serverLogs.length,
+    logs: serverLogs
+  });
+});
+
+app.post('/api/logs', (req, res) => {
+  const { level = 'INFO', msg, details } = req.body;
+  if (msg) {
+    logToBuffer(level, `[CLIENT] ${msg}`, details);
+  }
+  res.sendStatus(204);
+});
 
 // In-Memory Database for Rooms, Messages, AI Conversations, and Pamphlets
 const rooms = new Map<string, RoomData>();
@@ -308,6 +352,7 @@ app.post('/api/rooms', (req, res) => {
   if (!roomPamphlets.has(roomId)) roomPamphlets.set(roomId, []);
 
   saveStateToDisk();
+  logToBuffer('INFO', `اتاق جدیدی با موفقیت ساخته شد: ID=${roomId}, Name="${name.trim()}", Creator="${hostMember.name}"`);
   res.status(201).json(newRoom);
 });
 
