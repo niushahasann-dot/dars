@@ -18,8 +18,14 @@ export const LogsConsole: React.FC = () => {
   useEffect(() => {
     const originalConsoleError = console.error;
     const originalConsoleWarn = console.warn;
+    const originalConsoleLog = console.log;
+    const originalConsoleInfo = console.info;
 
-    const reportClientLog = async (level: 'WARN' | 'ERROR', msg: string, stack?: string) => {
+    let isReporting = false;
+
+    const reportClientLog = async (level: 'INFO' | 'WARN' | 'ERROR', msg: string, stack?: string) => {
+      if (isReporting) return;
+      isReporting = true;
       try {
         await fetch(`${API_BASE_URL}/api/logs`, {
           method: 'POST',
@@ -32,6 +38,8 @@ export const LogsConsole: React.FC = () => {
         });
       } catch {
         // ignore log reporting failures
+      } finally {
+        isReporting = false;
       }
     };
 
@@ -46,6 +54,18 @@ export const LogsConsole: React.FC = () => {
       const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
       reportClientLog('WARN', msg);
       originalConsoleWarn.apply(console, args);
+    };
+
+    console.log = (...args: any[]) => {
+      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+      reportClientLog('INFO', msg);
+      originalConsoleLog.apply(console, args);
+    };
+
+    console.info = (...args: any[]) => {
+      const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+      reportClientLog('INFO', msg);
+      originalConsoleInfo.apply(console, args);
     };
 
     // Capture unhandled promise rejections or runtime errors
@@ -63,6 +83,8 @@ export const LogsConsole: React.FC = () => {
     return () => {
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
+      console.log = originalConsoleLog;
+      console.info = originalConsoleInfo;
       window.removeEventListener('error', handleRuntimeError);
       window.removeEventListener('unhandledrejection', handleRejection);
     };

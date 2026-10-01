@@ -30,9 +30,11 @@ export class RoomService {
         const rooms: RoomData[] = await res.json();
         rooms.forEach((r) => this.saveLocalRoom(r));
         return rooms;
+      } else {
+        console.error(`getRooms HTTP error status: ${res.status} ${res.statusText}`);
       }
     } catch (err) {
-      console.warn('API getRooms error, using cached rooms', err);
+      console.error('API getRooms error, using cached rooms', err);
     }
 
     // Fallback to cached rooms
@@ -54,8 +56,9 @@ export class RoomService {
       if (res.status === 404) {
         return null;
       }
+      console.error(`getRoom HTTP error for room ID ${cleanId}: status ${res.status}`);
     } catch (err) {
-      console.warn('Server fetch error for room:', err);
+      console.error('Server fetch error for room ID:', cleanId, err);
     }
 
     return null;
