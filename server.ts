@@ -35,8 +35,12 @@ const __dirname = path.dirname(__filename);
 const PORT = Number(process.env.PORT) || 3000;
 
 const tempUploadDir = path.resolve(process.cwd(), '.data/uploads/temp');
-if (!fs.existsSync(tempUploadDir)) {
-  fs.mkdirSync(tempUploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(tempUploadDir)) {
+    fs.mkdirSync(tempUploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[SERVER STARTUP] Could not create tempUploadDir:', err);
 }
 const upload = multer({
   dest: tempUploadDir,
@@ -1052,8 +1056,15 @@ app.post('/api/rooms/:roomId/pamphlets/upload-chunk', upload.single('file'), asy
   }
 
   const chunksDir = path.resolve(process.cwd(), `.data/uploads/chunks/${uploadId}`);
-  if (!fs.existsSync(chunksDir)) {
-    fs.mkdirSync(chunksDir, { recursive: true });
+  try {
+    if (!fs.existsSync(chunksDir)) {
+      fs.mkdirSync(chunksDir, { recursive: true });
+    }
+  } catch (err) {
+    if (req.file) {
+      try { fs.unlinkSync(req.file.path); } catch {}
+    }
+    return res.status(500).json({ error: 'امکان ایجاد پوشه بارگذاری قطعات وجود ندارد.' });
   }
 
   const chunkPath = path.join(chunksDir, `chunk_${chunkIndex}`);

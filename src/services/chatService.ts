@@ -106,7 +106,9 @@ class ChatService {
   }
 
   private getWebSocketUrl(): string {
-    return getWebSocketUrl();
+    if (typeof window === 'undefined') return '';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/ws`;
   }
 
   private async syncRoomStateHTTP(isInitial = false) {

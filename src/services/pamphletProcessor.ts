@@ -40,10 +40,14 @@ const JOBS_DIR = path.join(DATA_DIR, 'jobs');
 
 // Ensure directories exist
 function ensureDirectories() {
-  for (const dir of [DATA_DIR, UPLOADS_DIR, CHUNKS_DIR, JOBS_DIR]) {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  try {
+    for (const dir of [DATA_DIR, UPLOADS_DIR, CHUNKS_DIR, JOBS_DIR]) {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
     }
+  } catch (err) {
+    console.warn('[PAMPHLET PROCESSOR] Could not ensure directories:', err);
   }
 }
 ensureDirectories();
@@ -218,8 +222,12 @@ export function getJob(fileId: string): ProcessingJob | null {
 // Chunks Persistence per Room and File
 function getChunksFilePath(roomId: string, fileId: string): string {
   const roomDir = path.join(CHUNKS_DIR, roomId);
-  if (!fs.existsSync(roomDir)) {
-    fs.mkdirSync(roomDir, { recursive: true });
+  try {
+    if (!fs.existsSync(roomDir)) {
+      fs.mkdirSync(roomDir, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Could not create room chunks directory:', err);
   }
   return path.join(roomDir, `${fileId}.json`);
 }
@@ -285,8 +293,12 @@ export class PamphletProcessor {
 
   public getUploadPath(roomId: string, fileId: string, originalName: string): string {
     const roomUploads = path.join(UPLOADS_DIR, roomId);
-    if (!fs.existsSync(roomUploads)) {
-      fs.mkdirSync(roomUploads, { recursive: true });
+    try {
+      if (!fs.existsSync(roomUploads)) {
+        fs.mkdirSync(roomUploads, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('Could not create room uploads folder:', err);
     }
     const safeExt = path.extname(originalName) || '';
     return path.join(roomUploads, `${fileId}${safeExt}`);

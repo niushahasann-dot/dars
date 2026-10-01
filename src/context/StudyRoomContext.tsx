@@ -1212,7 +1212,7 @@ export const StudyRoomProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         // 2. Request short-lived LiveKit SFU Token or Preview fallback from backend
         console.log(`[Voice] Fetching room token for studyroom_${activeRoom.id}...`);
-        const tokenRes = await fetch(`${API_BASE_URL}/api/voice/token`, {
+        const tokenRes = await fetch('/api/voice/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
